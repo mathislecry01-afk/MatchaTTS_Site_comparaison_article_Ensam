@@ -3,87 +3,285 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MatchaTTS_Grp14</title>
+    <title>Expérience d'Écoute</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            max-width: 800px;
-            margin: 0 auto;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
             padding: 20px;
-            background-color: #f9f9f9;
         }
-        h1 { text-align: center; color: #2c3e50; }
-        .authors { text-align: center; font-style: italic; margin-bottom: 30px; }
-        h2 { border-bottom: 2px solid #eaeaea; padding-bottom: 10px; margin-top: 30px; }
-        .abstract { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .audio-container { margin: 15px 0; }
-        audio { width: 100%; }
-        .links { text-align: center; margin: 20px 0; }
-        .btn {
-            display: inline-block;
-            background: #0366d6;
-            color: white;
-            padding: 10px 20px;
-            text-decoration: none;
-            border-radius: 5px;
-            margin: 0 5px;
+        .card {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
         }
-        .btn:hover { background: #0255b3; }
+        h1, h2 { color: #333; margin-bottom: 20px; }
+        p { color: #666; line-height: 1.6; margin-bottom: 30px; }
+        
+        /* Formulaire Identité */
+        .input-group { margin-bottom: 15px; text-align: left; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; color: #444; }
+        input[type="text"] {
+            width: 100%; padding: 12px; border: 2px solid #ddd;
+            border-radius: 8px; font-size: 16px; box-sizing: border-box;
+            transition: border-color 0.3s;
+        }
+        input[type="text"]:focus { border-color: #0366d6; outline: none; }
+
+        /* Lecteur Audio */
+        audio { width: 100%; margin: 20px 0; outline: none; }
+
+        /* Barre de notation 1-10 */
+        .rating-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            margin: 25px 0;
+        }
+        .rate-btn {
+            width: 40px; height: 40px;
+            border: 2px solid #0366d6;
+            background: white;
+            color: #0366d6;
+            border-radius: 50%;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .rate-btn:hover { background: #e6f0ff; transform: scale(1.1); }
+        .rate-btn.selected {
+            background: #0366d6; color: white;
+            box-shadow: 0 0 10px rgba(3, 102, 214, 0.5);
+        }
+
+        /* Boutons d'action */
+        .btn-primary {
+            background-color: #28a745; color: white;
+            padding: 15px 40px; border: none; border-radius: 30px;
+            font-size: 18px; cursor: pointer; transition: background 0.3s;
+            display: inline-block; text-decoration: none;
+        }
+        .btn-primary:hover { background-color: #218838; }
+        .btn-primary:disabled { background-color: #ccc; cursor: not-allowed; }
+
+        /* Barre de progression */
+        .progress-bar {
+            height: 6px; background: #eee; border-radius: 3px;
+            margin-bottom: 30px; overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%; background: #0366d6; width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        /* Utilitaire pour cacher les étapes */
+        .hidden { display: none; }
+        .fade-in { animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
 
-    <h1>Matcha-TTS analyse et comparaison</h1>
-    
-    <div class="authors">
-        Par Mathis Lecry, PM Demars, Yucheng, Minh <br>
-        <em>UPMC et ENSAM parisTech</em>
-    </div>
-
-    <div class="links">
-        <a href="assets/notre_article_matcha_tts/Rapport_Matcha_TTS_MLA.pdf" class="btn" target="_blank"> Notre rapport Matcha-TTS(PDF)</a>
-        <a href="https://github.com/Raph1821/Matcha-TTS-etu-UPMC-ENSAM" class="btn" target="_blank">GitHub du projet</a>
-    </div>
-
-    <h2>Résumé (Abstract)</h2>
-    <div class="abstract">
+<div class="card fade-in">
+    <div id="step-identity">
+        <h1>Bienvenue 👋</h1>
         <p>
-            This project presents the ré-implementation of the Matcha-TTS model, a fast and probabilistic text-to-speech architecture based on Optimal-Transport Conditional Flow Matching (OT-CFM).
+            Vous allez écouter plusieurs extraits vocaux. <br>
+            Pour chaque extrait, évaluez le caractère <strong>naturel</strong> de la voix sur une échelle de 1 à 10.
         </p>
+        <p style="font-size: 0.9em; color: #888;">(1 = Très robotique, 10 = Parfaitement humain)</p>
+        
+        <div class="input-group">
+            <label>Votre Nom</label>
+            <input type="text" id="nom" placeholder="Ex: Dupont">
+        </div>
+        <div class="input-group">
+            <label>Votre Prénom</label>
+            <input type="text" id="prenom" placeholder="Ex: Marie">
+        </div>
+
+        <button class="btn-primary" onclick="startExperience()">Commencer le test</button>
     </div>
 
-    <h2>Démos Audio</h2>
-    <p>Voici des exemples de résultats générés par notre modèle :</p>
+    <div id="step-test" class="hidden">
+        <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+        
+        <h2 id="question-title">Extrait 1</h2>
+        
+        <audio id="audio-player" controls controlsList="nodownload"></audio>
 
-    <div class="audio-container">
-        <label><strong>Exemple 1 :</strong> "Phrase de test : NJDibejclbdshc hsdkc"</label>
-        <audio controls src="ton-fichier.wav"></audio>
+        <p>Notez le naturel de cette voix :</p>
+        
+        <div class="rating-container" id="rating-box">
+            </div>
+
+        <button id="btn-next" class="btn-primary" onclick="nextAudio()" disabled>Suivant →</button>
     </div>
 
-    <div class="audio-container">
-        <label><strong>Exemple 2 :</strong> "Comparaison..."</label>
-        <audio controls src="ton-fichier-2.wav"></audio>
+    <div id="step-end" class="hidden">
+        <h2>Terminé ! 🎉</h2>
+        <p>Merci pour votre participation. Cliquez ci-dessous pour enregistrer vos résultats.</p>
+        <button id="btn-send" class="btn-primary" onclick="sendData()">Envoyer mes résultats</button>
+        <p id="status-msg" style="margin-top:15px; font-weight:bold;"></p>
     </div>
+</div>
 
-    <hr style="margin-top: 40px; border: 0; border-top: 1px solid #eee;">
+<script>
+    // --- CONFIGURATION ---
+    // 👇 COLLE TON URL GOOGLE APPS SCRIPT ICI 👇
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbywfRMQelrdAow-k21i6XG9E0KOcxhKXLmEFIaFDQvV5VAYHrwnNXyfgIob6j1dxXyJXA/exec"; 
+    // ---------------------
 
-    <h2>Expérience de voix naturelle</h2>
-    <p>
-        Nous menons une étude comparative pour évaluer la qualité des modèles de synthèse vocale actuels.
-        Cette page vous permettra de participer à un sondage visant à juger si des modèles comme 
-        <strong>Grad-TTS</strong>, <strong>MatchaTTS</strong> ou d'autres produisent une voix perçue comme naturelle.
-    </p>
+    // Liste des modèles (L'utilisateur ne verra pas les noms, mais ils seront envoyés au script)
+    // J'ai ajouté un ordre aléatoire pour la science !
+    let playlist = [
+        { id: "gt", name: "Ground Truth", file: "gt.wav" },
+        { id: "grad4", name: "Grad-TTS-4", file: "grad-tts-4.wav" },
+        { id: "grad10", name: "Grad-TTS-10", file: "grad-tts-10.wav" },
+        { id: "grad100", name: "Grad-TTS-100", file: "grad-tts-100.wav" },
+        { id: "grad1000", name: "Grad-TTS-1000", file: "grad-tts-1000.wav" },
+        { id: "glow", name: "Glow-TTS", file: "glow-tts.wav" },
+        { id: "taco2", name: "Tacotron2", file: "tacotron2.wav" },
+        { id: "fast", name: "FastSpeech", file: "fastspeech.wav" },
+        { id: "matcha4", name: "MatchaTTS-4", file: "matchatts-4.wav" },
+        { id: "matcha8", name: "MatchaTTS-8", file: "matchatts-8.wav" },
+        { id: "matcha10", name: "MatchaTTS-10", file: "matchatts-10.wav" }
+    ];
 
-    <div style="text-align: center; margin: 30px 0;">
-        <a href="experience.html" class="btn">Commencer l'expérience</a>
-    </div>
+    let currentIndex = 0;
+    let results = [];
+    let currentRating = null;
 
+    // Mélanger la playlist au démarrage pour un vrai blind test
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+    }
 
+    // Initialisation des boutons 1-10
+    function initButtons() {
+        const container = document.getElementById('rating-box');
+        for(let i=1; i<=10; i++) {
+            let btn = document.createElement('button');
+            btn.className = 'rate-btn';
+            btn.innerText = i;
+            btn.onclick = () => selectRating(i, btn);
+            container.appendChild(btn);
+        }
+    }
 
+    function selectRating(score, btnElement) {
+        currentRating = score;
+        // Visuel : retirer la classe 'selected' de tous et l'ajouter au cliqué
+        document.querySelectorAll('.rate-btn').forEach(b => b.classList.remove('selected'));
+        btnElement.classList.add('selected');
+        // Activer le bouton suivant
+        document.getElementById('btn-next').disabled = false;
+    }
+
+    function startExperience() {
+        const nom = document.getElementById('nom').value.trim();
+        const prenom = document.getElementById('prenom').value.trim();
+        
+        if(!nom || !prenom) {
+            alert("Merci de remplir votre nom et prénom.");
+            return;
+        }
+
+        shuffleArray(playlist); // On mélange !
+        initButtons();
+        
+        document.getElementById('step-identity').classList.add('hidden');
+        document.getElementById('step-test').classList.remove('hidden');
+        loadAudio();
+    }
+
+    function loadAudio() {
+        const item = playlist[currentIndex];
+        
+        // Mise à jour interface
+        document.getElementById('question-title').innerText = `Extrait ${currentIndex + 1} / ${playlist.length}`;
+        document.getElementById('progress').style.width = `${(currentIndex / playlist.length)*100}%`;
+        
+        // Chargement Audio
+        const player = document.getElementById('audio-player');
+        player.src = "assets/" + item.file; // Assure-toi que les fichiers sont dans 'assets'
+        player.play().catch(e => console.log("Lecture auto bloquée par navigateur, l'utilisateur doit cliquer"));
+
+        // Reset boutons
+        currentRating = null;
+        document.querySelectorAll('.rate-btn').forEach(b => b.classList.remove('selected'));
+        document.getElementById('btn-next').disabled = true;
+    }
+
+    function nextAudio() {
+        if(!currentRating) return;
+
+        // Sauvegarde du résultat
+        const item = playlist[currentIndex];
+        results.push({
+            modele: item.name, // On garde le vrai nom caché pour l'export
+            note: currentRating
+        });
+
+        // Suite ou Fin
+        currentIndex++;
+        if(currentIndex < playlist.length) {
+            loadAudio();
+        } else {
+            document.getElementById('step-test').classList.add('hidden');
+            document.getElementById('step-end').classList.remove('hidden');
+        }
+    }
+
+    function sendData() {
+        const nom = document.getElementById('nom').value;
+        const prenom = document.getElementById('prenom').value;
+        const btn = document.getElementById('btn-send');
+        const msg = document.getElementById('status-msg');
+
+        if (!GOOGLE_SCRIPT_URL.startsWith("https")) {
+            alert("Erreur: L'URL du script n'est pas configurée dans le code.");
+            return;
+        }
+
+        btn.disabled = true;
+        btn.innerText = "Envoi en cours...";
+
+        fetch(GOOGLE_SCRIPT_URL, {
+            method: "POST",
+            mode: "no-cors",
+            headers: { "Content-Type": "text/plain" },
+            body: JSON.stringify({
+                participant: nom + " " + prenom,
+                responses: results
+            })
+        })
+        .then(() => {
+            btn.style.display = "none";
+            msg.innerText = "✅ Résultats envoyés avec succès ! Merci.";
+            msg.style.color = "green";
+        })
+        .catch(err => {
+            btn.disabled = false;
+            btn.innerText = "Réessayer";
+            msg.innerText = "❌ Erreur lors de l'envoi.";
+            msg.style.color = "red";
+        });
+    }
+</script>
 
 </body>
 </html>
-
-
