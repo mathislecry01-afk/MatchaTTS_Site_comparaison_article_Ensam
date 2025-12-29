@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Expérience d'Écoute</title>
+    <title>Étude Comparative TTS - Multi-Phases</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f0f2f5;
             display: flex;
-            flex-direction: column; /* Changement pour aligner le lien en bas */
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
@@ -22,13 +22,38 @@
             border-radius: 15px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             width: 100%;
-            max-width: 600px;
+            max-width: 700px;
             text-align: center;
-            margin-bottom: 20px; /* Espace avant le lien retour */
+            margin-bottom: 20px;
+            position: relative;
         }
-        h1, h2 { color: #333; margin-bottom: 20px; }
-        p { color: #666; line-height: 1.6; margin-bottom: 30px; }
+        h1, h2 { color: #333; margin-bottom: 15px; }
         
+        /* Zone de texte de référence */
+        .reference-text-box {
+            background-color: #e3f2fd;
+            border-left: 5px solid #0366d6;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+            font-style: italic;
+            font-size: 1.1em;
+            color: #0d47a1;
+            text-align: left;
+        }
+        .phase-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #6c757d;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
         /* Formulaire Identité */
         .input-group { margin-bottom: 15px; text-align: left; }
         label { display: block; margin-bottom: 5px; font-weight: bold; color: #444; }
@@ -39,10 +64,8 @@
         }
         input[type="text"]:focus { border-color: #0366d6; outline: none; }
 
-        /* Lecteur Audio */
+        /* Lecteur Audio & Notation */
         audio { width: 100%; margin: 20px 0; outline: none; }
-
-        /* Barre de notation 1-10 */
         .rating-container {
             display: flex;
             flex-wrap: wrap;
@@ -67,38 +90,47 @@
         }
 
         /* Boutons d'action */
+        .buttons-wrapper {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
         .btn-primary {
             background-color: #28a745; color: white;
             padding: 15px 40px; border: none; border-radius: 30px;
             font-size: 18px; cursor: pointer; transition: background 0.3s;
-            display: inline-block; text-decoration: none;
+            text-decoration: none;
         }
         .btn-primary:hover { background-color: #218838; }
         .btn-primary:disabled { background-color: #ccc; cursor: not-allowed; }
 
+        /* Nouveau style pour le bouton précédent */
+        .btn-secondary {
+            background-color: #6c757d; color: white;
+            padding: 15px 30px; border: none; border-radius: 30px;
+            font-size: 18px; cursor: pointer; transition: background 0.3s;
+        }
+        .btn-secondary:hover { background-color: #5a6268; }
+        .btn-secondary:disabled { background-color: #e2e6ea; color: #adb5bd; cursor: not-allowed; }
+
         /* Barre de progression */
         .progress-bar {
             height: 6px; background: #eee; border-radius: 3px;
-            margin-bottom: 30px; overflow: hidden;
+            margin-bottom: 20px; overflow: hidden;
         }
         .progress-fill {
             height: 100%; background: #0366d6; width: 0%;
             transition: width 0.3s ease;
         }
 
-        /* Lien Retour */
-        .back-link {
-            color: #666;
-            text-decoration: none;
-            font-size: 0.9em;
-            transition: color 0.2s;
-        }
-        .back-link:hover { color: #0366d6; text-decoration: underline; }
-
-        /* Utilitaire pour cacher les étapes */
+        /* Utilitaires */
         .hidden { display: none; }
         .fade-in { animation: fadeIn 0.5s; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .back-link { color: #666; text-decoration: none; font-size: 0.9em; }
+        .back-link:hover { color: #0366d6; text-decoration: underline; }
     </style>
 </head>
 <body>
@@ -107,10 +139,10 @@
     <div id="step-identity">
         <h1>Bienvenue 👋</h1>
         <p>
-            Vous allez écouter plusieurs extraits vocaux. <br>
-            Pour chaque extrait, évaluez le caractère <strong>naturel</strong> de la voix sur une échelle de 1 à 10.
+            Cette expérience se déroule en <strong>3 phases</strong>.<br>
+            Vous écouterez différents modèles de synthèse vocale lisant 3 textes différents.
+            Votre but est de noter le caractère <strong>naturel</strong> de la voix (1 à 10).
         </p>
-        <p style="font-size: 0.9em; color: #888;">(1 = Très robotique, 10 = Parfaitement humain)</p>
         
         <div class="input-group">
             <label>Votre Nom</label>
@@ -121,27 +153,41 @@
             <input type="text" id="prenom" placeholder="Ex: Marie">
         </div>
 
-        <button class="btn-primary" onclick="startExperience()">Commencer le test</button>
+        <button class="btn-primary" onclick="startExperience()">Commencer l'expérience</button>
+    </div>
+
+    <div id="step-transition" class="hidden">
+        <h2 id="transition-title">Phase terminée</h2>
+        <p>Prêt pour le texte suivant ?</p>
+        <button class="btn-primary" onclick="startNextPhase()">Continuer →</button>
     </div>
 
     <div id="step-test" class="hidden">
+        <div class="phase-badge" id="phase-indicator">Phase 1/3</div>
         <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
         
         <h2 id="question-title">Extrait 1</h2>
+
+        <div class="reference-text-box">
+            <span style="font-weight:bold; color:#333; display:block; margin-bottom:5px;">Texte à lire :</span>
+            <span id="current-text-display">...</span>
+        </div>
         
         <audio id="audio-player" controls controlsList="nodownload"></audio>
 
         <p>Notez le naturel de cette voix :</p>
         
-        <div class="rating-container" id="rating-box">
-            </div>
+        <div class="rating-container" id="rating-box"></div>
 
-        <button id="btn-next" class="btn-primary" onclick="nextAudio()" disabled>Suivant →</button>
+        <div class="buttons-wrapper">
+            <button id="btn-prev" class="btn-secondary" onclick="prevAudio()" disabled>← Précédent</button>
+            <button id="btn-next" class="btn-primary" onclick="nextAudio()" disabled>Suivant →</button>
+        </div>
     </div>
 
     <div id="step-end" class="hidden">
-        <h2>Terminé ! 🎉</h2>
-        <p>Merci pour votre participation. Cliquez ci-dessous pour enregistrer vos résultats.</p>
+        <h2>Expérience Terminée ! 🎉</h2>
+        <p>Merci d'avoir complété les 3 phases. Cliquez ci-dessous pour sauvegarder vos résultats.</p>
         <button id="btn-send" class="btn-primary" onclick="sendData()">Envoyer mes résultats</button>
         <p id="status-msg" style="margin-top:15px; font-weight:bold;"></p>
     </div>
@@ -151,25 +197,43 @@
 
 <script>
     // --- CONFIGURATION ---
-    // 👇 COLLE TON URL GOOGLE APPS SCRIPT ICI 👇
+    // 👇 COLLE TON URL GOOGLE SCRIPT ICI 👇
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbywfRMQelrdAow-k21i6XG9E0KOcxhKXLmEFIaFDQvV5VAYHrwnNXyfgIob6j1dxXyJXA/exec"; 
     // ---------------------
 
-    let playlist = [
-        { id: "gt", name: "Ground Truth", file: "gt.wav" },
-        { id: "grad4", name: "Grad-TTS-4", file: "grad-tts-4.wav" },
-        { id: "grad10", name: "Grad-TTS-10", file: "grad-tts-10.wav" },
-        { id: "grad100", name: "Grad-TTS-100", file: "grad-tts-100.wav" },
-        { id: "grad1000", name: "Grad-TTS-1000", file: "grad-tts-1000.wav" },
-        { id: "glow", name: "Glow-TTS", file: "glow-tts.wav" },
-        { id: "taco2", name: "Tacotron2", file: "tacotron2.wav" },
-        { id: "fast", name: "FastSpeech", file: "fastspeech.wav" },
-        { id: "matcha4", name: "MatchaTTS-4", file: "matchatts-4.wav" },
-        { id: "matcha8", name: "MatchaTTS-8", file: "matchatts-8.wav" },
-        { id: "matcha10", name: "MatchaTTS-10", file: "matchatts-10.wav" }
+    const phasesData = [
+        {
+            name: "Phase 1",
+            text: "Bonjour, ceci est la première phrase de test.", 
+            playlist: [
+                { id: "p1_gt", name: "P1_GroundTruth", file: "p1_gt.wav" },
+                { id: "p1_grad", name: "P1_GradTTS", file: "p1_grad.wav" },
+                { id: "p1_matcha", name: "P1_MatchaTTS", file: "p1_matcha.wav" }
+            ]
+        },
+        {
+            name: "Phase 2",
+            text: "Voici le deuxième texte, un peu plus complexe.", 
+            playlist: [
+                { id: "p2_gt", name: "P2_GroundTruth", file: "p2_gt.wav" },
+                { id: "p2_grad", name: "P2_GradTTS", file: "p2_grad.wav" },
+                { id: "p2_matcha", name: "P2_MatchaTTS", file: "p2_matcha.wav" }
+            ]
+        },
+        {
+            name: "Phase 3",
+            text: "Enfin, la troisième phrase permet de vérifier l'intonation.", 
+            playlist: [
+                { id: "p3_gt", name: "P3_GroundTruth", file: "p3_gt.wav" },
+                { id: "p3_grad", name: "P3_GradTTS", file: "p3_grad.wav" },
+                { id: "p3_matcha", name: "P3_MatchaTTS", file: "p3_matcha.wav" }
+            ]
+        }
     ];
 
-    let currentIndex = 0;
+    let currentPhaseIndex = 0;
+    let currentAudioIndex = 0;
+    let currentPlaylist = []; 
     let results = [];
     let currentRating = null;
 
@@ -182,7 +246,7 @@
 
     function initButtons() {
         const container = document.getElementById('rating-box');
-        container.innerHTML = ''; // Reset pour éviter les doublons si restart
+        container.innerHTML = '';
         for(let i=1; i<=10; i++) {
             let btn = document.createElement('button');
             btn.className = 'rate-btn';
@@ -208,46 +272,96 @@
             return;
         }
 
-        shuffleArray(playlist);
         initButtons();
-        
         document.getElementById('step-identity').classList.add('hidden');
+        
+        currentPhaseIndex = 0;
+        preparePhase(currentPhaseIndex);
+    }
+
+    function preparePhase(index) {
+        currentPlaylist = [...phasesData[index].playlist];
+        shuffleArray(currentPlaylist);
+        currentAudioIndex = 0;
+        
+        document.getElementById('phase-indicator').innerText = `Phase ${index + 1} / 3`;
+        document.getElementById('current-text-display').innerText = phasesData[index].text;
+        
+        document.getElementById('step-transition').classList.add('hidden');
         document.getElementById('step-test').classList.remove('hidden');
+        
         loadAudio();
     }
 
     function loadAudio() {
-        const item = playlist[currentIndex];
+        const item = currentPlaylist[currentAudioIndex];
         
-        document.getElementById('question-title').innerText = `Extrait ${currentIndex + 1} / ${playlist.length}`;
-        document.getElementById('progress').style.width = `${(currentIndex / playlist.length)*100}%`;
+        document.getElementById('question-title').innerText = `Extrait ${currentAudioIndex + 1} / ${currentPlaylist.length}`;
+        document.getElementById('progress').style.width = `${(currentAudioIndex / currentPlaylist.length)*100}%`;
         
         const player = document.getElementById('audio-player');
-        // Vérifie bien que les fichiers sont dans le dossier "assets" sur ton GitHub
         player.src = "assets/" + item.file; 
         player.play().catch(e => console.log("Auto-play bloqué"));
 
+        // Reset boutons de notation
         currentRating = null;
         document.querySelectorAll('.rate-btn').forEach(b => b.classList.remove('selected'));
         document.getElementById('btn-next').disabled = true;
+
+        // GESTION DU BOUTON PRÉCÉDENT
+        // Si on est au premier audio (index 0), on désactive le bouton Précédent
+        document.getElementById('btn-prev').disabled = (currentAudioIndex === 0);
     }
 
     function nextAudio() {
         if(!currentRating) return;
 
-        const item = playlist[currentIndex];
+        // Sauvegarde
+        const item = currentPlaylist[currentAudioIndex];
         results.push({
+            phase: phasesData[currentPhaseIndex].name,
             modele: item.name,
             note: currentRating
         });
 
-        currentIndex++;
-        if(currentIndex < playlist.length) {
+        currentAudioIndex++;
+
+        if(currentAudioIndex < currentPlaylist.length) {
             loadAudio();
         } else {
-            document.getElementById('step-test').classList.add('hidden');
+            finishPhase();
+        }
+    }
+
+    // --- NOUVELLE FONCTION : PRÉCÉDENT ---
+    function prevAudio() {
+        if(currentAudioIndex > 0) {
+            // 1. On recule l'index
+            currentAudioIndex--;
+            
+            // 2. IMPORTANT : On supprime la dernière note enregistrée
+            // car l'utilisateur va revoter pour cet extrait.
+            results.pop();
+
+            // 3. On recharge l'audio
+            loadAudio();
+        }
+    }
+
+    function finishPhase() {
+        document.getElementById('step-test').classList.add('hidden');
+        
+        if (currentPhaseIndex < 2) {
+            document.getElementById('transition-title').innerText = `Phase ${currentPhaseIndex + 1} terminée`;
+            document.getElementById('step-transition').classList.remove('hidden');
+        } else {
             document.getElementById('step-end').classList.remove('hidden');
         }
+    }
+
+    function startNextPhase() {
+        currentPhaseIndex++;
+        preparePhase(currentPhaseIndex);
     }
 
     function sendData() {
@@ -257,7 +371,7 @@
         const msg = document.getElementById('status-msg');
 
         if (!GOOGLE_SCRIPT_URL.startsWith("https")) {
-            alert("Erreur: L'URL du script n'est pas configurée dans le code.");
+            alert("Erreur: URL du script Google manquante.");
             return;
         }
 
@@ -275,13 +389,13 @@
         })
         .then(() => {
             btn.style.display = "none";
-            msg.innerText = "✅ Résultats envoyés avec succès ! Merci.";
+            msg.innerText = "✅ Résultats sauvegardés ! Merci beaucoup.";
             msg.style.color = "green";
         })
         .catch(err => {
             btn.disabled = false;
             btn.innerText = "Réessayer";
-            msg.innerText = "❌ Erreur lors de l'envoi.";
+            msg.innerText = "Erreur réseau.";
             msg.style.color = "red";
         });
     }
