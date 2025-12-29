@@ -9,6 +9,7 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f0f2f5;
             display: flex;
+            flex-direction: column; /* Changement pour aligner le lien en bas */
             justify-content: center;
             align-items: center;
             min-height: 100vh;
@@ -23,6 +24,7 @@
             width: 100%;
             max-width: 600px;
             text-align: center;
+            margin-bottom: 20px; /* Espace avant le lien retour */
         }
         h1, h2 { color: #333; margin-bottom: 20px; }
         p { color: #666; line-height: 1.6; margin-bottom: 30px; }
@@ -84,6 +86,15 @@
             transition: width 0.3s ease;
         }
 
+        /* Lien Retour */
+        .back-link {
+            color: #666;
+            text-decoration: none;
+            font-size: 0.9em;
+            transition: color 0.2s;
+        }
+        .back-link:hover { color: #0366d6; text-decoration: underline; }
+
         /* Utilitaire pour cacher les étapes */
         .hidden { display: none; }
         .fade-in { animation: fadeIn 0.5s; }
@@ -136,14 +147,14 @@
     </div>
 </div>
 
+<a href="index.html" class="back-link">← Retour à l'accueil</a>
+
 <script>
     // --- CONFIGURATION ---
     // 👇 COLLE TON URL GOOGLE APPS SCRIPT ICI 👇
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbywfRMQelrdAow-k21i6XG9E0KOcxhKXLmEFIaFDQvV5VAYHrwnNXyfgIob6j1dxXyJXA/exec"; 
     // ---------------------
 
-    // Liste des modèles (L'utilisateur ne verra pas les noms, mais ils seront envoyés au script)
-    // J'ai ajouté un ordre aléatoire pour la science !
     let playlist = [
         { id: "gt", name: "Ground Truth", file: "gt.wav" },
         { id: "grad4", name: "Grad-TTS-4", file: "grad-tts-4.wav" },
@@ -162,7 +173,6 @@
     let results = [];
     let currentRating = null;
 
-    // Mélanger la playlist au démarrage pour un vrai blind test
     function shuffleArray(array) {
         for (let i = array.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
@@ -170,9 +180,9 @@
         }
     }
 
-    // Initialisation des boutons 1-10
     function initButtons() {
         const container = document.getElementById('rating-box');
+        container.innerHTML = ''; // Reset pour éviter les doublons si restart
         for(let i=1; i<=10; i++) {
             let btn = document.createElement('button');
             btn.className = 'rate-btn';
@@ -184,10 +194,8 @@
 
     function selectRating(score, btnElement) {
         currentRating = score;
-        // Visuel : retirer la classe 'selected' de tous et l'ajouter au cliqué
         document.querySelectorAll('.rate-btn').forEach(b => b.classList.remove('selected'));
         btnElement.classList.add('selected');
-        // Activer le bouton suivant
         document.getElementById('btn-next').disabled = false;
     }
 
@@ -200,7 +208,7 @@
             return;
         }
 
-        shuffleArray(playlist); // On mélange !
+        shuffleArray(playlist);
         initButtons();
         
         document.getElementById('step-identity').classList.add('hidden');
@@ -211,16 +219,14 @@
     function loadAudio() {
         const item = playlist[currentIndex];
         
-        // Mise à jour interface
         document.getElementById('question-title').innerText = `Extrait ${currentIndex + 1} / ${playlist.length}`;
         document.getElementById('progress').style.width = `${(currentIndex / playlist.length)*100}%`;
         
-        // Chargement Audio
         const player = document.getElementById('audio-player');
-        player.src = "assets/" + item.file; // Assure-toi que les fichiers sont dans 'assets'
-        player.play().catch(e => console.log("Lecture auto bloquée par navigateur, l'utilisateur doit cliquer"));
+        // Vérifie bien que les fichiers sont dans le dossier "assets" sur ton GitHub
+        player.src = "assets/" + item.file; 
+        player.play().catch(e => console.log("Auto-play bloqué"));
 
-        // Reset boutons
         currentRating = null;
         document.querySelectorAll('.rate-btn').forEach(b => b.classList.remove('selected'));
         document.getElementById('btn-next').disabled = true;
@@ -229,14 +235,12 @@
     function nextAudio() {
         if(!currentRating) return;
 
-        // Sauvegarde du résultat
         const item = playlist[currentIndex];
         results.push({
-            modele: item.name, // On garde le vrai nom caché pour l'export
+            modele: item.name,
             note: currentRating
         });
 
-        // Suite ou Fin
         currentIndex++;
         if(currentIndex < playlist.length) {
             loadAudio();
