@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Étude Comparative TTS</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f6f8;
+        }
+        h1 { text-align: center; color: #2c3e50; }
+        .instructions {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .identity-section {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #90caf9;
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box; /* Important pour la largeur */
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        th { background-color: #0366d6; color: white; }
+        tr:hover { background-color: #f9f9f9; }
+        
+        .rating {
+            display: flex;
+            justify-content: space-between;
+            width: 150px;
+        }
+        .rating label { cursor: pointer; text-align: center; font-weight: normal; }
+        
+        .submit-section { text-align: center; margin-top: 30px; }
+        .btn-save {
+            background-color: #28a745;
+            color: white;
+            padding: 15px 30px;
+            font-size: 18px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .btn-save:hover { background-color: #218838; }
+        audio { width: 250px; }
+    </style>
+</head>
+<body>
+
+    <h1>Sondage : Qualité de la Synthèse Vocale</h1>
+
+    <div class="identity-section">
+        <h3>👤 Vos informations</h3>
+        <p>Merci de renseigner votre nom pour valider la participation.</p>
+        <div class="input-group">
+            <label for="nom">Nom :</label>
+            <input type="text" id="nom" placeholder="Ex: Dupont">
+        </div>
+        <div class="input-group">
+            <label for="prenom">Prénom :</label>
+            <input type="text" id="prenom" placeholder="Ex: Jean">
+        </div>
+    </div>
+
+    <div class="instructions">
+        <h3>Instructions :</h3>
+        <p>Écoutez chaque extrait et notez le caractère naturel (1 = Robotique, 5 = Humain).</p>
+    </div>
+
+    <form id="ttsForm">
+        <table>
+            <thead>
+                <tr>
+                    <th>Modèle</th>
+                    <th>Audio</th>
+                    <th>Note (1 à 5)</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                </tbody>
+        </table>
+
+        <div class="submit-section">
+            <button type="button" class="btn-save" onclick="sendDataToGoogle()">💾 Envoyer mes réponses</button>
+            <p style="font-size: 0.9em; color: #666; margin-top: 10px;">
+                (Cela enverra votre réponse de manière anonyme à notre Google Sheet)
+            </p>
+        </div>
+    </form>
+
+    <script>
+        // --- CONFIGURATION ---
+        // COLLE L'URL QUE TU AS COPIÉE À L'ÉTAPE 2 ICI ENTRE LES GUILLEMETS :
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbywfRMQelrdAow-k21i6XG9E0KOcxhKXLmEFIaFDQvV5VAYHrwnNXyfgIob6j1dxXyJXA/exec"; 
+        // ---------------------
+
+        const models = [
+            { id: "gt", name: "Ground Truth (Référence)", file: "gt.wav" },
+            { id: "grad4", name: "Grad-TTS-4", file: "grad-tts-4.wav" },
+            { id: "grad10", name: "Grad-TTS-10", file: "grad-tts-10.wav" },
+            { id: "grad100", name: "Grad-TTS-100", file: "grad-tts-100.wav" },
+            { id: "grad1000", name: "Grad-TTS-1000", file: "grad-tts-1000.wav" },
+            { id: "glow", name: "Glow-TTS", file: "glow-tts.wav" },
+            { id: "taco2", name: "Tacotron2", file: "tacotron2.wav" },
+            { id: "fast", name: "FastSpeech", file: "fastspeech.wav" },
+            { id: "matcha4", name: "MatchaTTS-4", file: "matchatts-4.wav" },
+            { id: "matcha8", name: "MatchaTTS-8", file: "matchatts-8.wav" },
+            { id: "matcha10", name: "MatchaTTS-10", file: "matchatts-10.wav" }
+        ];
+
+        const tbody = document.getElementById('tableBody');
+
+        // Génération du tableau
+        models.forEach(model => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong>${model.name}</strong></td>
+                <td><audio controls src="assets/${model.file}"></audio></td>
+                <td>
+                    <div class="rating">
+                        <label>1<br><input type="radio" name="${model.id}" value="1"></label>
+                        <label>2<br><input type="radio" name="${model.id}" value="2"></label>
+                        <label>3<br><input type="radio" name="${model.id}" value="3"></label>
+                        <label>4<br><input type="radio" name="${model.id}" value="4"></label>
+                        <label>5<br><input type="radio" name="${model.id}" value="5"></label>
+                    </div>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        function sendDataToGoogle() {
+            const btn = document.querySelector('.btn-save');
+            const nom = document.getElementById('nom').value.trim();
+            const prenom = document.getElementById('prenom').value.trim();
+
+            if (!nom || !prenom) {
+                alert("⚠️ Merci de renseigner votre Nom et Prénom.");
+                return;
+            }
+
+            // Préparation des données
+            const formData = new FormData(document.getElementById('ttsForm'));
+            let responses = [];
+            
+            models.forEach(model => {
+                const val = formData.get(model.id);
+                if (val) {
+                    responses.push({
+                        modele: model.name,
+                        note: val
+                    });
+                }
+            });
+
+            if(responses.length === 0) {
+                alert("Veuillez noter au moins un extrait.");
+                return;
+            }
+
+            // Changement d'état du bouton
+            btn.textContent = "Envoi en cours...";
+            btn.disabled = true;
+            btn.style.backgroundColor = "#999";
+
+            // Envoi vers Google Script
+            fetch(GOOGLE_SCRIPT_URL, {
+                method: "POST",
+                mode: "no-cors", // Important pour Google Apps Script
+                headers: {
+                    "Content-Type": "text/plain;charset=utf-8",
+                },
+                body: JSON.stringify({
+                    participant: nom + " " + prenom,
+                    responses: responses
+                })
+            })
+            .then(response => {
+                // Avec "no-cors", on ne peut pas lire la réponse JSON, 
+                // mais si on arrive ici, c'est que la requête est partie.
+                alert("✅ Merci ! Vos réponses ont bien été enregistrées.");
+                btn.textContent = "Envoyé !";
+                btn.style.backgroundColor = "#28a745";
+            })
+            .catch(error => {
+                console.error("Erreur:", error);
+                alert("❌ Une erreur est survenue lors de l'envoi.");
+                btn.textContent = "Réessayer";
+                btn.disabled = false;
+                btn.style.backgroundColor = "#dc3545";
+            });
+        }
+    </script>
+
+    <div style="text-align: center; margin-top: 20px;">
+        <a href="index.html">← Retour à l'accueil</a>
+    </div>
+
+</body>
+</html>
