@@ -17,7 +17,7 @@
         h1 { text-align: center; color: #22313f; }
         .authors { text-align: center; font-style: italic; margin-bottom: 30px; }
         h2 { border-bottom: 2px solid #eaeaea; padding-bottom: 10px; margin-top: 30px; }
-        .abstract { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .abstract { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); text-align: justify; }
         .audio-container { margin: 15px 0; }
         audio { width: 100%; }
         .links { text-align: center; margin: 20px 0; }
@@ -31,6 +31,17 @@
             margin: 0 5px;
         }
         .btn:hover { background: #0255b3; }
+        .btn2 {
+            display: inline-block;
+            background: #f52e14;
+            color: white;
+            padding: 15px 25px;
+            text-decoration-thickness: 1px;
+            text-rendering: optimizeLegibility;
+            border-radius: 5px;
+            margin: 0 5px;
+        }
+        .btn2:hover { background: #e22d00; }
     </style>
 </head>
 <body>
@@ -47,22 +58,45 @@
         <a href="https://github.com/Raph1821/Matcha-TTS-etu-UPMC-ENSAM" class="btn" target="_blank">GitHub du projet</a>
     </div>
 
-    <h2>Résumé (Abstract)</h2>
+    
+
+    <h2>Abstract</h2>
+    <div class="audio-container">
+        <audio controls src="assets/audio_demo/abstract.wav"></audio>
+    </div>
     <div class="abstract">
         <p>
-            This project presents the ré-implementation of the Matcha-TTS model, a fast and probabilistic text-to-speech architecture based on Optimal-Transport Conditional Flow Matching (OT-CFM).
+            This project presents the re-implementation of the Matcha-TTS model, 
+            a fast and probabilistic text-to-speech architecture based on Optimal-Transport 
+            Conditional Flow Matching (OT-CFM). 
+            The objective was to reproduce the results of the paper by Shivam Mehta (2024) 
+            by implementing the architecture from scratch. 
+            We implemented a Transformer-based text encoder, a duration predictor, 
+            and a 1D U-Net decoder driven by an Ordinary Differential Equation (ODE). 
+            The model was trained on the LJSpeech dataset. This report details our architectural 
+            approach, the implementation choices made to separate the mathematical logic from the neural 
+            network, and the results obtained during training. <strong>Finally, this website serves as a demonstration 
+            of our achievements, featuring an interactive poll designed to evaluate and compare the naturalness 
+            of various Text-to-Speech models.</strong>
         </p>
     </div>
 
-    <h2>Expérience de voix naturelle</h2>
+    <div class="links">
+        <a href="assets/notre_article_matcha_tts/MatchaTTS - 2024.pdf" class="btn" target="_blank">
+            📄 Lire l'article original "MATCHA-TTS"
+        </a>
+    </div>
+
+    <h2><strong>Natural Voice Experimentation</strong></h2>
     <p>
-        Nous menons une étude comparative pour évaluer la qualité des modèles de synthèse vocale actuels.
-        Cette page vous permettra de participer à un sondage visant à juger si des modèles comme 
-        <strong>Grad-TTS</strong>, <strong>MatchaTTS</strong> ou d'autres produisent une voix perçue comme naturelle.
+        We are conducting a comparative study to evaluate the quality of current text-to-speech models. 
+        This page allows you to participate in a survey aimed at assessing 
+        whether models such as our <strong>MatchaTTS</strong>,
+        <strong>Grad-TTS</strong>, or others produce a natural-sounding voice.
     </p>
 
     <div style="text-align: center; margin: 30px 0;">
-        <a href="experience.html" class="btn">Commencer le sondage </a>
+        <a href="experience.html" class="btn2"> START THE POLL </a>
     </div>
 
     <h2>Démos Audio</h2>

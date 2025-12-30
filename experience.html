@@ -137,11 +137,11 @@
 
 <div class="card fade-in">
     <div id="step-identity">
-        <h1>Bienvenue 👋</h1>
+        <h1>Bienvenue ! </h1>
         <p>
             Cette expérience se déroule en <strong>3 phases</strong>.<br>
             Vous écouterez différents modèles de synthèse vocale lisant 3 textes différents.
-            Votre but est de noter le caractère <strong>naturel</strong> de la voix (1 à 10).
+            Votre but est de noter le caractère <strong>naturel</strong> de la voix (1 à 5).
         </p>
         
         <div class="input-group">
@@ -268,7 +268,7 @@
     function initButtons() {
         const container = document.getElementById('rating-box');
         container.innerHTML = '';
-        for(let i=1; i<=10; i++) {
+        for(let i=1; i<=5; i++) {
             let btn = document.createElement('button');
             btn.className = 'rate-btn';
             btn.innerText = i;
