@@ -105,17 +105,82 @@
         <a href="experience.html" class="btn2"> START THE POLL </a>
     </div>
 
+    <h2>Architecture et Fonctionnement</h2>
+    <div style="background: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 30px;">
+        
+        <h3>1. Vue d'ensemble du pipeline</h3>
+        <p>
+            Matcha-TTS est un modèle non-autorégressif basé sur le <em>Conditional Flow Matching</em>. 
+            Contrairement aux modèles de diffusion classiques, il apprend une trajectoire optimale (Optimal Transport) 
+            pour transformer un bruit simple en un mél-spectrogramme réaliste.
+        </p>
+        <figure style="text-align: center; margin: 20px 0;">
+            <img src="assets/Images/Shéma global Matcha.png" alt="Schéma global de l'architecture Matcha-TTS" style="max-width: 100%; height: auto; border-radius: 4px; border: 1px solid #ddd;">
+            <figcaption style="font-style: italic; color: #666; margin-top: 8px;">
+                Fig 1. Architecture globale : Le texte est encodé, aligné via un prédicteur de durée, puis passé au réseau de prédiction de flux (Flow-prediction network).
+            </figcaption>
+        </figure>
+        <p>
+            Le processus commence par l'encodage du texte (phonétisation) et la prédiction de la durée de chaque phonème. 
+            Ces informations conditionnent la génération du spectrogramme final via une équation différentielle ordinaire (ODE).
+        </p>
+
+        <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
+
+        <h3>2. Le Décodeur : U-Net 1D</h3>
+        <p>
+            Le cœur du modèle est un U-Net 1D modifié. Il prend en entrée le spectrogramme bruité ($x_t$), 
+            le pas de temps actuel ($t$) et le conditionnement du texte ($\mu$).
+        </p>
+        <figure style="text-align: center; margin: 20px 0;">
+            <img src="assets/Images/Unet1DMatcha.png" alt="Architecture du U-Net 1D" style="max-width: 80%; height: auto; border-radius: 4px; border: 1px solid #ddd;">
+            <figcaption style="font-style: italic; color: #666; margin-top: 8px;">
+                Fig 2. Détail du U-Net 1D contenant des blocs Transformer et ResNet 1D pour estimer le champ de vecteurs.
+            </figcaption>
+        </figure>
+        <p>
+            Cette architecture permet de capturer à la fois les dépendances locales (via les convolutions ResNet) 
+            et globales (via les blocs Transformer) du signal audio, assurant une cohérence temporelle élevée.
+        </p>
+
+        <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
+
+        <h3>3. Visualisation : Du "Prior" à la Génération</h3>
+        <p>
+            L'image ci-dessous illustre la différence cruciale entre la prédiction brute issue de l'encodeur de texte (à gauche) 
+            et le spectrogramme raffiné par le décodeur ODE (à droite).
+        </p>
+        <figure style="text-align: center; margin: 20px 0;">
+            <img src="assets/Images/Comapairaison_Mel-Spectogramme_Mu_et_X1.png" alt="Comparaison Mu vs Spectrogramme final" style="max-width: 100%; height: auto; border-radius: 4px; border: 1px solid #ddd;">
+            <figcaption style="font-style: italic; color: #666; margin-top: 8px;">
+                Fig 3. À gauche : Le "Mu" (moyenne prédite par le texte), souvent flou et "sur-lissé". <br>
+                À droite : Le mél-spectrogramme final après passage dans le décodeur, riche en détails harmoniques.
+            </figcaption>
+        </figure>
+
+        <h4>Résultat Final Généré</h4>
+        <p>Voici un exemple de mél-spectrogramme complet généré par notre réimplémentation, ainsi que l'audio correspondant :</p>
+        
+        <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 20px; justify-content: center;">
+            <div style="flex: 1; min-width: 300px;">
+                <img src="assets/Images/results_visu.png" alt="Résultat final généré" style="width: 100%; border-radius: 4px; border: 1px solid #ddd;">
+            </div>
+            <div style="flex: 0 0 300px; text-align: center;">
+                <label><strong>Écouter le résultat :</strong></label>
+                <br>
+                <audio controls src="assets/audio_demo/demo_resultat_final.wav" style="width: 100%; margin-top: 10px;"></audio>
+                <p style="font-size: 0.9em; color: #666; margin-top: 5px;">Phrase : <em>"The birch canoe slid on the smooth planks."</em></p>
+            </div>
+        </div>
+
+    </div>
+
     <h2>Démos Audio</h2>
     <p>Voici des exemples de résultats générés par notre modèle :</p>
 
     <div class="audio-container">
         <label><strong>Exemple 1 :</strong> "Phrase de test : NJDibejclbdshc hsdkc"</label>
-        <audio controls src="ton-fichier.wav"></audio>
-    </div>
-
-    <div class="audio-container">
-        <label><strong>Exemple 2 :</strong> "Comparaison..."</label>
-        <audio controls src="ton-fichier-2.wav"></audio>
+        <audio controls src="assets/audio_demo/simpleDemo.wav"></audio>
     </div>
 
     <hr style="margin-top: 40px; border: 0; border-top: 1px solid #eee;">
